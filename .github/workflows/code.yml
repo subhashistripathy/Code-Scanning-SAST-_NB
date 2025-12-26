@@ -1,34 +1,37 @@
-name: Snyk Code Scan (SAST - No Block)
+name: Snyk SCA – No Block
 
 on:
   push:
   pull_request:
 
 jobs:
-  snyk-code:
+  snyk-sca:
     runs-on: ubuntu-latest
     permissions:
       contents: read
       security-events: write
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Set up Snyk
-        uses: snyk/actions/setup@v4
+      # Install Snyk CLI (correct action)
+      - uses: snyk/actions/setup@v4
 
-      - name: Run Snyk Code Scan (No Block)
+      # (Optional) install Python deps so Snyk can resolve packages
+      - name: Install dependencies
         run: |
-          snyk code test \
-            --sarif-file-output=snyk-code.sarif \
-            || true
+          if [ -f requirements.txt ]; then
+            pip install -r requirements.txt || true
+          fi
 
-          ls -lh snyk-code.sarif || true
+      - name: Snyk Test (no-block) + SARIF
+        run: |
+          snyk test --all-projects --sarif-file-output=snyk-sca.sarif || true
+          ls -lh snyk-sca.sarif || true
         env:
           SNYK_TOKEN: c80a2012-bb87-4482-beb5-399c664f183d
 
-      - name: Upload SARIF to GitHub Code Scanning
+      - name: Upload SARIF to GitHub
         uses: github/codeql-action/upload-sarif@v3
         with:
-          sarif_file: snyk-code.sarif
+          sarif_file: snyk-sca.sarif
