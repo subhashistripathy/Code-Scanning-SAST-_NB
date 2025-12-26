@@ -14,10 +14,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # Correct Snyk Action
-      - uses: snyk/actions/setup@v4
+      # Use stable working ref
+      - uses: snyk/actions/setup@master
 
-      - name: Optional – install Python deps
+      - name: Install dependencies (optional)
         run: |
           if [ -f requirements.txt ]; then
             pip install -r requirements.txt || true
@@ -30,7 +30,7 @@ jobs:
         env:
           SNYK_TOKEN: c80a2012-bb87-4482-beb5-399c664f183d
 
-      - name: Upload SARIF to GitHub
+      - name: Upload SARIF
         uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: snyk-sca.sarif
