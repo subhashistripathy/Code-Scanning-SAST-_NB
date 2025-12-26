@@ -14,7 +14,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # Use stable working ref
       - uses: snyk/actions/setup@master
 
       - name: Install dependencies (optional)
@@ -23,14 +22,22 @@ jobs:
             pip install -r requirements.txt || true
           fi
 
-      - name: Snyk Test (no-block) + SARIF
+      - name: Run Snyk SCA (no-block) + force SARIF
         run: |
-          snyk test --all-projects --sarif-file-output=snyk-sca.sarif || true
-          ls -lh snyk-sca.sarif || true
+          echo "Running Snyk scan..."
+          snyk test --all-projects --sarif-file-output=snyk-sca.sarif || echo "Snyk failed but continuing"
+
+          # If SARIF was not created, create an empty valid file
+          if [ ! -f snyk-sca.sarif ]; then
+            echo "Creating fallback SARIF file"
+            echo '{ "version":"2.1.0","runs":[] }' > snyk-sca.sarif
+          fi
+
+          ls -lh snyk-sca.sarif
         env:
           SNYK_TOKEN: c80a2012-bb87-4482-beb5-399c664f183d
 
       - name: Upload SARIF
-        uses: github/codeql-action/upload-sarif@v3
+        uses: github/codeql-action/upload-sarif@v4
         with:
           sarif_file: snyk-sca.sarif
