@@ -15,7 +15,18 @@ def store_password(user, pwd):
     with open("users.txt", "a") as f:
         f.write(f"{user}:{hashed}\n")
 
-
+# Insecure HTTP request (No SSL Verification)
+@app.route("/fetch")
+def fetch():
+    url = request.args.get("url")
+    r = requests.get(url, verify=False)
+    return r.text# Insecure HTTP request (No SSL Verification)
+@app.route("/fetch")
+def fetch():
+    url = request.args.get("url")
+    r = requests.get(url, verify=False)
+    return r.text
+    
 # SQL Injection vulnerability
 def get_user(username):
     conn = sqlite3.connect("test.db")
@@ -29,15 +40,6 @@ def get_user(username):
 def ping():
     ip = request.args.get("ip")
     return os.popen("ping -c 1 " + ip).read()
-
-
-# Insecure HTTP request (No SSL Verification)
-@app.route("/fetch")
-def fetch():
-    url = request.args.get("url")
-    r = requests.get(url, verify=False)
-    return r.text
-
 
 # Path Traversal
 @app.route("/read")
